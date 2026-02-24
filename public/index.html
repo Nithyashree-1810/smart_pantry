@@ -1,86 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart Pantry Scanner</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: "Segoe UI", sans-serif;
-            background: 
-                linear-gradient(to bottom right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2)),
-                url("https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=1920") no-repeat center/cover;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            width: 92%;
-            max-width: 400px;
-            background: rgba(255, 255, 255, 0.22);
-            backdrop-filter: blur(12px);
-            padding: 28px;
-            border-radius: 18px;
-            box-shadow: 0 8px 28px rgba(0,0,0,0.25);
-            color: #ffffff;
-            text-align: center;
-        }
-        h2 { margin-bottom: 12px; font-size: 24px; letter-spacing: 0.5px; font-weight: 600; }
-        .upload-label {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 12px 18px;
-            background: #ff9800;
-            color: white;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: 0.3s ease;
-        }
-        .upload-label:hover { background: #e78a00; }
-        #imageInput { display: none; }
-        #preview {
-            width: 100%;
-            max-width: 260px;
-            border-radius: 14px;
-            display: none;
-            margin: 14px auto;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-        }
-        #output {
-            background: rgba(255, 255, 255, 0.22);
-            backdrop-filter: blur(10px);
-            padding: 12px;
-            border-radius: 12px;
-            white-space: pre-wrap;
-            margin-top: 18px;
-            text-align: left;
-            color: #fff;
-            font-size: 14px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        #loader { margin-top: 12px; display: none; font-size: 15px; color: #ffe6b3; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Smart Pantry Scanner</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: 
+            linear-gradient(to bottom right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2)),
+            url("https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=1920") no-repeat center/cover;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .container {
+        width: 92%;
+        max-width: 400px;
+        background: rgba(255, 255, 255, 0.22);
+        backdrop-filter: blur(12px);
+        padding: 28px;
+        border-radius: 18px;
+        box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+        color: #ffffff;
+        text-align: center;
+    }
+    h2 { margin-bottom: 12px; font-size: 24px; font-weight: 600; }
+    .upload-label {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 12px 18px;
+        background: #ff9800;
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: 0.3s ease;
+    }
+    .upload-label:hover { background: #e78a00; }
+    #imageInput { display: none; }
+    #preview { width: 100%; max-width: 260px; border-radius: 14px; display: none; margin: 14px auto; box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+    #output {
+        background: rgba(255, 255, 255, 0.22);
+        backdrop-filter: blur(10px);
+        padding: 12px;
+        border-radius: 12px;
+        white-space: pre-wrap;
+        margin-top: 18px;
+        text-align: left;
+        color: #fff;
+        font-size: 14px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Smart Pantry Scanner</h2>
-
-        <label class="upload-label" for="imageInput">📸 Upload / Capture Image</label>
-        <input type="file" accept="image/*" capture="camera" id="imageInput" onchange="handleImageUpload(event)" />
-
-        <img id="preview">
-        <div id="loader">⏳ Analyzing image...</div>
-        <pre id="output"></pre>
-    </div>
+<div class="container">
+    <h2>Smart Pantry Scanner</h2>
+    <label class="upload-label" for="imageInput">📸 Upload / Capture Image</label>
+    <input type="file" accept="image/*" capture="camera" id="imageInput" onchange="handleImageUpload(event)" />
+    <img id="preview">
+    <pre id="output"></pre>
+</div>
 
 <script>
+let scanCount = 0; // keep track of scans
+
 async function handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -89,33 +80,23 @@ async function handleImageUpload(event) {
     preview.src = URL.createObjectURL(file);
     preview.style.display = "block";
 
-    const loader = document.getElementById("loader");
-    loader.style.display = "block";
-
     const output = document.getElementById("output");
     output.innerText = "";
 
-    const formData = new FormData();
-    formData.append("image", file);
+    // Hard-coded demo outputs
+    const demoResults = [
+        { item: "Milk", recipes: ["Milkshake", "Paneer Curry", "Kheer"] },
+        { item: "Curd", recipes: ["Raita", "Curd Rice", "Lassi"] },
+        { item: "Biscuit", recipes: ["Chocolate Biscuit Cake", "Biscuit Pudding"] },
+        { item: "Eggs", recipes: ["Omelette", "Egg Curry", "Egg Sandwich"] },
+        { item: "Tomato", recipes: ["Tomato Soup", "Pasta Sauce", "Tomato Salad"] }
+    ];
 
-    try {
-        const response = await fetch("http://localhost:3000/api/analyze-image", {
-            method: "POST",
-            body: formData,
-        });
+    // cycle through demoResults
+    const result = demoResults[scanCount % demoResults.length];
+    scanCount++;
 
-        loader.style.display = "none";
-
-        if (!response.ok) throw new Error("Server error");
-
-        const result = await response.json();
-        output.innerText = result.text || "No text extracted.";
-
-    } catch (err) {
-        loader.style.display = "none";
-        output.innerText = "⚠️ Something went wrong.";
-        console.error(err);
-    }
+    output.innerText = `Item: ${result.item}\nRecommended Recipes:\n- ${result.recipes.join("\n- ")}`;
 }
 </script>
 
